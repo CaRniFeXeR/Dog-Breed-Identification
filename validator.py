@@ -57,7 +57,7 @@ class Validator():
                 running_loss += loss.item()
 
                 if (batch_i + 1) % 10 == 0:
-                    print(f"Val Step [{batch_i + 1}/{len(dataloader)}], Loss: {running_loss / 10:.4f} Accuracy: {total_accuracy / batch_i:.4f}")
+                    print(f"Val Step [{batch_i + 1}/{len(dataloader)}], Loss: {running_loss / 10:.4f} Accuracy: {total_accuracy / (batch_i +1):.4f}")
                     running_loss = 0.0
 
             val_metric = total_accuracy / (batch_i + 1)
@@ -95,12 +95,11 @@ class Validator():
                     img_tensor = torch.cat(batch_img_tensors)
                     
                     img_tensor = img_tensor.to(self.device)
-                    outputs = model(img_tensor).cpu().detach().numpy()
+                    outputs =  torch.nn.functional.sigmoid(model(img_tensor)).cpu().detach().numpy()
 
                     for output, path in zip(outputs, batch_img_paths):
                         csv_line = f"{path.stem},{self._prediction_to_csv_str(output)}\n"
                         csv_output += csv_line
-                        print(csv_line)
                    
                     batch_img_tensors = []
                     batch_img_paths = []

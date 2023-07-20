@@ -9,10 +9,12 @@ from validator import Validator
 
 class Trainer():
 
-    def __init__(self, train_folder : Path, save_folder : Path, augmetation_transforms) -> None:
+    def __init__(self, train_folder : Path, save_folder : Path, n_epochs : int, batch_size : int, augmetation_transforms) -> None:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.train_folder = train_folder
         self.save_folder = save_folder
+        self.n_epochs = n_epochs
+        self.batch_size = batch_size
         self.augmetation_transforms = augmetation_transforms
         self._prepare_data()
         self._prepare_model()
@@ -24,10 +26,11 @@ class Trainer():
             transforms.CenterCrop(224)
         ]
 
-        transform_steps.extend(self.augmetation_transforms)
+        if self.augmetation_transforms is not None and len(self.augmetation_transforms) > 0:
+            transform_steps.extend(self.augmetation_transforms)
 
         transform_steps.append(transforms.ToTensor())
-        transform_steps.append( transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        transform_steps.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
         
         transform = transforms.Compose(transform_steps)
 
@@ -46,20 +49,20 @@ class Trainer():
         self.model = self.model.to(self.device)
 
     def train(self, validator : Validator):
-        
+        """
+        Train the model.
+        """
         
         # Create data loader
-        dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=32, shuffle=True)
+        dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True)
     
-
         # Define loss function and optimizer
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
 
         # Training loop
-        num_epochs = 10
         best_val_score = 0.0
-        for epoch in range(num_epochs):
+        for epoch in range(self.n_epochs):
             running_loss = 0.0
             self.model.train()
             for i, (inputs, labels) in enumerate(dataloader):
@@ -79,7 +82,7 @@ class Trainer():
                 running_loss += loss.item()
 
                 if (i + 1) % 10 == 0:
-                    print(f"Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{len(dataloader)}], Loss: {running_loss / 10:.4f}")
+                    print(f"Epoch [{epoch + 1}/{self.n_epochs}], Step [{i + 1}/{len(dataloader)}], Loss: {running_loss / 10:.4f}")
                     running_loss = 0.0
             
             if (epoch + 1) % validator.val_interval == 0:
