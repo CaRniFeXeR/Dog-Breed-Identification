@@ -62,7 +62,7 @@ class Validator():
 
             print(f"Validation accuracy: {total_accuracy / batch_i:.4f}")
 
-    def test_on_folder(self, model : torch.nn.Module, test_folder : Path, output_file : Path):
+    def test_on_folder(self, model : torch.nn.Module, test_folder : Path, output_file : Path, batch_size : int = 64):
         """
         Test the model on a folder of images and save the predictions to a csv file.
         """
@@ -70,15 +70,34 @@ class Validator():
         print(f"Testing model on {test_folder}")
 
         csv_output = "id," + ",".join(self._get_class_names()) + "\n"
+        batch_img_tensors = []
+        batch_img_paths = []
+        batch_count = 0
         for img_path in test_folder.iterdir():
             if img_path.is_file():
                 img_data = Image.open(img_path)
                 img_tensor = self.transform(img_data)
                 img_tensor = img_tensor.unsqueeze(0)
-                img_tensor = img_tensor.to(self.device)
-                outputs = model(img_tensor).squeeze().cpu().detach().numpy()
-                csv_output += f"{img_path.stem},{self._prediction_to_csv_str(outputs)}\n"
-        
+                batch_img_tensors.append(img_tensor)
+                batch_img_paths.append(img_path)
+
+                if batch_count == batch_size:
+                    batch_count = 0
+                    img_tensor = torch.cat(batch_img_tensors)
+                    
+                    img_tensor = img_tensor.to(self.device)
+                    outputs = model(img_tensor).cpu().detach().numpy()
+
+                    for output, path in zip(outputs, batch_img_paths):
+                        csv_line = f"{path.stem},{self._prediction_to_csv_str(output)}\n"
+                        csv_output += csv_line
+                        print(csv_line)
+                   
+                    batch_img_tensors = []
+                    batch_img_paths = []
+
+                batch_count += 1
+
         with open(output_file, "w") as f:
                 f.write(csv_output)
         
@@ -93,6 +112,8 @@ class Validator():
         """
         result_str= ""
         for predicted_prob in predicted_prod:
+            if predicted_prob < 0:
+                predicted_prob *= -1
             result_str += f"{predicted_prob:.4f}{sep}"
         return result_str[:-1] # remove last comma
 
