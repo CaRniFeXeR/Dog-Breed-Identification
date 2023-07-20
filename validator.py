@@ -30,14 +30,14 @@ class Validator():
         # Load the dataset
         self.dataset = datasets.ImageFolder(self.val_folder, transform=self.transform)
 
-    def validate_model(self, model, criterion):
+    def validate_model(self, model : torch.nn.Module, criterion, batch_size : int = 32):
         """
         Validate the model on the validation set.
         """
         
         assert model is not None, "Model is not defined"
 
-        dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=32, shuffle=True)
+        dataloader = torch.utils.data.DataLoader(self.dataset, batch_size=batch_size, shuffle=True)
 
         model.eval()
         total_accuracy = 0.0
@@ -62,6 +62,7 @@ class Validator():
 
             val_metric = total_accuracy / (batch_i + 1)
             print(f"Validation accuracy: {val_metric:.4f}")
+            print("last output", self._prediction_to_csv_str(torch.nn.functional.softmax(outputs[0]).detach().cpu().numpy()))
 
             return val_metric
 
@@ -95,7 +96,7 @@ class Validator():
                     img_tensor = torch.cat(batch_img_tensors)
                     
                     img_tensor = img_tensor.to(self.device)
-                    outputs =  torch.nn.functional.sigmoid(model(img_tensor)).cpu().detach().numpy()
+                    outputs =  torch.nn.functional.softmax(model(img_tensor)).cpu().detach().numpy()
 
                     for output, path in zip(outputs, batch_img_paths):
                         csv_line = f"{path.stem},{self._prediction_to_csv_str(output)}\n"

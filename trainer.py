@@ -39,7 +39,7 @@ class Trainer():
 
     def _prepare_model(self):
          # Load pre-trained ResNet model
-        self.model = models.resnet50(pretrained=True)
+        self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         num_classes = len(self.dataset.classes)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.model = self.model.to(self.device)
@@ -58,7 +58,9 @@ class Trainer():
     
         # Define loss function and optimizer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.AdamW(self.model.parameters(), lr=0.001)
+        # optimizer = optim.AdamW(self.model.parameters(), lr=0.001)
+        # optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
 
         # Training loop
         best_val_score = 0.0
@@ -86,7 +88,7 @@ class Trainer():
                     running_loss = 0.0
             
             if (epoch + 1) % validator.val_interval == 0:
-                val_score = validator.validate_model(self.model, criterion)
+                val_score = validator.validate_model(self.model, criterion, batch_size=self.batch_size)
 
                 if val_score > best_val_score:
                     best_val_score = val_score
