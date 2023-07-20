@@ -70,6 +70,10 @@ class Validator():
         Test the model on a folder of images and save the predictions to a csv file.
         """
 
+        if output_file.exists():
+            print(f"Output file {output_file} already exists. Exiting...")
+            return
+
         print(f"Testing model on {test_folder}")
 
         csv_output = "id," + ",".join(self._get_class_names()) + "\n"

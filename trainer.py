@@ -9,21 +9,27 @@ from validator import Validator
 
 class Trainer():
 
-    def __init__(self, train_folder : Path, save_folder : Path) -> None:
+    def __init__(self, train_folder : Path, save_folder : Path, augmetation_transforms) -> None:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.train_folder = train_folder
         self.save_folder = save_folder
+        self.augmetation_transforms = augmetation_transforms
         self._prepare_data()
         self._prepare_model()
 
     def _prepare_data(self):
         # Define transformations to apply to the images
-        transform = transforms.Compose([
+        transform_steps = [
             transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+            transforms.CenterCrop(224)
+        ]
+
+        transform_steps.extend(self.augmetation_transforms)
+
+        transform_steps.append(transforms.ToTensor())
+        transform_steps.append( transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        
+        transform = transforms.Compose(transform_steps)
 
         # Load the dataset
         self.dataset = datasets.ImageFolder(self.train_folder, transform=transform)
