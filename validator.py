@@ -60,7 +60,10 @@ class Validator():
                     print(f"Val Step [{batch_i + 1}/{len(dataloader)}], Loss: {running_loss / 10:.4f} Accuracy: {total_accuracy / batch_i:.4f}")
                     running_loss = 0.0
 
-            print(f"Validation accuracy: {total_accuracy / batch_i:.4f}")
+            val_metric = total_accuracy / (batch_i + 1)
+            print(f"Validation accuracy: {val_metric:.4f}")
+
+            return val_metric
 
     def test_on_folder(self, model : torch.nn.Module, test_folder : Path, output_file : Path, batch_size : int = 64):
         """
@@ -73,6 +76,8 @@ class Validator():
         batch_img_tensors = []
         batch_img_paths = []
         batch_count = 0
+        total_count = 0
+        n_test_imgs = len(list(test_folder.iterdir()))
         for img_path in test_folder.iterdir():
             if img_path.is_file():
                 img_data = Image.open(img_path)
@@ -81,7 +86,7 @@ class Validator():
                 batch_img_tensors.append(img_tensor)
                 batch_img_paths.append(img_path)
 
-                if batch_count == batch_size:
+                if batch_count == batch_size or total_count == n_test_imgs - 1:
                     batch_count = 0
                     img_tensor = torch.cat(batch_img_tensors)
                     
@@ -97,6 +102,7 @@ class Validator():
                     batch_img_paths = []
 
                 batch_count += 1
+                total_count += 1
 
         with open(output_file, "w") as f:
                 f.write(csv_output)
