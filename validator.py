@@ -96,7 +96,7 @@ class Validator():
                     img_tensor = torch.cat(batch_img_tensors)
                     
                     img_tensor = img_tensor.to(self.device)
-                    outputs =  torch.nn.functional.softmax(model(img_tensor)).cpu().detach().numpy()
+                    outputs =  torch.nn.functional.softmax(model(img_tensor), dim=1).cpu().detach().numpy()
 
                     for output, path in zip(outputs, batch_img_paths):
                         csv_line = f"{path.stem},{self._prediction_to_csv_str(output)}\n"
