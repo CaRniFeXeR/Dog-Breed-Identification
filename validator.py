@@ -115,15 +115,15 @@ class Validator():
     def _get_class_names(self):
         return self.dataset.classes
     
-    def _prediction_to_csv_str(self, predicted_prod : np.array, sep = ",") -> str:
+    def _prediction_to_csv_str(self, pred_probs : np.array, sep = ",") -> str:
         """
         turns array of prediction into a comma seperated string
         """
         result_str= ""
-        for predicted_prob in predicted_prod:
-            if predicted_prob < 0:
-                predicted_prob *= -1
-            result_str += f"{predicted_prob:.4f}{sep}"
+        for class_prob in pred_probs:
+            if class_prob < 0:
+                class_prob *= -1
+            result_str += f"{class_prob:.4f}{sep}"
         return result_str[:-1] # remove last comma
 
 

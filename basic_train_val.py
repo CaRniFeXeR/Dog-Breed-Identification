@@ -7,11 +7,16 @@ from torchvision import transforms
 data_augementation_steps = [
     transforms.RandomHorizontalFlip(),
     transforms.RandomVerticalFlip(),
-    transforms.RandomRotation(degrees=30),
+    transforms.RandomRotation(degrees=20),
     transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1)
 ]
 
-trainer = Trainer(train_folder=Path("./data/train_valid_test/train"), save_folder=Path("./models"))
+trainer = Trainer(train_folder=Path("./data/train_valid_test/train"),
+                 save_folder=Path("./models"),
+                    n_epochs=20,
+                    batch_size=64,
+                    augmetation_transforms=data_augementation_steps
+                 )
 validator = Validator(val_folder=Path("./data/train_valid_test/valid"), val_interval=1)
 
 

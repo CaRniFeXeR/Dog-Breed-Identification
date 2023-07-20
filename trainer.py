@@ -58,7 +58,7 @@ class Trainer():
     
         # Define loss function and optimizer
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
+        optimizer = optim.AdamW(self.model.parameters(), lr=0.001)
 
         # Training loop
         best_val_score = 0.0
