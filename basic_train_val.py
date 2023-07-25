@@ -16,7 +16,7 @@ data_augementation_steps = [
 trainer = Trainer(train_folder=Path("./data/train_valid_test/train"),
                  save_folder=Path("./models"),
                     n_epochs=25,
-                    batch_size=64,
+                    batch_size=32,
                     augmetation_transforms=data_augementation_steps
                  )
 validator = Validator(val_folder=Path("./data/train_valid_test/valid"), val_interval=1)
@@ -26,6 +26,6 @@ validator = Validator(val_folder=Path("./data/train_valid_test/valid"), val_inte
 print("start training ...")
 trainer.train(validator)
 trainer.load_model_from_file(Path("./models/best_model.pt"))
-validator.test_on_folder(trainer.model, test_folder=Path("./data/test"), output_file=Path("test_results.csv"), batch_size=64)
+validator.test_on_folder(trainer.model, test_folder=Path("./data/test"), output_file=Path("test_results.csv"), batch_size=32)
 
 

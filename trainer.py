@@ -39,7 +39,7 @@ class Trainer():
 
     def _prepare_model(self):
          # Load pre-trained ResNet model
-        self.model = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
+        self.model = models.resnet101(weights = models.ResNet101_Weights.DEFAULT)
         num_classes = len(self.dataset.classes)
         self.resnet_params = list(self.model.parameters())
         self.resnet_params = self.resnet_params[0:-2]
@@ -100,6 +100,6 @@ class Trainer():
                     best_val_score = val_score
                     torch.save(self.model.state_dict(), self.save_folder / "best_model.pt")
                     print("Best model saved!")
-                print(f"best_val score {best_val_score}")
+                print(f"best_val score {best_val_score:.3f}")
 
-        print(f"Training complete! best_val score {best_val_score}")
+        print(f"Training complete! best_val score {best_val_score:.3f}")
