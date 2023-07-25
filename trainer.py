@@ -39,9 +39,12 @@ class Trainer():
 
     def _prepare_model(self):
          # Load pre-trained ResNet model
-        self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+        self.model = models.resnet50(weights = models.ResNet50_Weights.DEFAULT)
         num_classes = len(self.dataset.classes)
+        self.resnet_params = list(self.model.parameters())
+        self.resnet_params = self.resnet_params[0:-2]
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+        self.head_params = self.model.fc.parameters()
         self.model = self.model.to(self.device)
 
     def load_model_from_file(self, file : Path):
@@ -58,9 +61,12 @@ class Trainer():
     
         # Define loss function and optimizer
         criterion = nn.CrossEntropyLoss()
-        # optimizer = optim.AdamW(self.model.parameters(), lr=0.001)
+        lr_backbone = 0.000001
+        lr_head = 0.001
+        optimizer = optim.AdamW([{"params" : self.resnet_params, "lr":lr_backbone},
+                                 {"params" : self.head_params, "lr": lr_head}])
         # optimizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9)
-        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        # optimizer = optim.Adam(self.model.parameters(), lr=0.001)
 
         # Training loop
         best_val_score = 0.0
@@ -94,5 +100,6 @@ class Trainer():
                     best_val_score = val_score
                     torch.save(self.model.state_dict(), self.save_folder / "best_model.pt")
                     print("Best model saved!")
+                print(f"best_val score {best_val_score}")
 
-        print("Training complete!")
+        print(f"Training complete! best_val score {best_val_score}")
