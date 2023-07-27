@@ -39,7 +39,7 @@ class Trainer():
 
     def _prepare_model(self):
          # Load pre-trained ResNet model
-        self.model = models.resnet101(weights = models.ResNet101_Weights.DEFAULT)
+        self.model = models.resnet152(weights = models.ResNet152_Weights.DEFAULT)
         num_classes = len(self.dataset.classes)
         self.resnet_params = list(self.model.parameters())
         self.resnet_params = self.resnet_params[0:-2]
